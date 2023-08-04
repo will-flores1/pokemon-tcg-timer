@@ -6,8 +6,15 @@ class PokemonTimer {
 	#switchButton;
 	#tickingSound;
 	#timeSound;
+	#timeSound2;
+	#timeSound3;
+	#timeSound4;
+	#timeSound5;
+	#timeSound6;
+	#timeSound7;
+	#timeSound8;
 
-	#TIMER_DURATION = 30;
+	#TIMER_DURATION = 92;
 	#AUTOMATE = true;
 	#seconds;
 	#timer;
@@ -20,7 +27,13 @@ class PokemonTimer {
 		this.#switchButton = document.getElementById("switch");
 		this.#tickingSound = new Audio("../assets/tick.mp3");
 		this.#timeSound = new Audio("../assets/time.mp3");
-		this.#tickingSound.volume = 0.4;
+		this.#timeSound2 = new Audio("../assets/time2.mp3");
+		this.#timeSound3 = new Audio("../assets/time3.mp3");
+		this.#timeSound4 = new Audio("../assets/time4.mp3");
+		this.#timeSound5 = new Audio("../assets/time5.mp3");
+		this.#timeSound6 = new Audio("../assets/time6.mp3");
+		this.#timeSound7 = new Audio("../assets/time7.mp3");
+		this.#timeSound8 = new Audio("../assets/pentakill.mp3");
 
 		this.#seconds = this.#TIMER_DURATION;
 		this.#timer = null;
@@ -70,6 +83,42 @@ class PokemonTimer {
 		this.#timerElement.textContent = `${minutes}:${remainingSeconds}`;
 	}
 
+	getRandomInt() {
+		return Math.floor(Math.random() * 7) + 1;
+	}
+
+	playTimeSound() {
+		const randomInt = this.getRandomInt();
+
+		switch (randomInt) {
+			case 1:
+				this.#timeSound.play();
+				break;
+			case 2:
+				this.#timeSound2.play();
+				break;
+			case 3:
+				this.#timeSound3.play();
+				break;
+			case 4:
+				this.#timeSound4.play();
+				break;
+			case 5:
+				this.#timeSound5.play();
+				break;
+			case 6:
+				this.#timeSound6.play();
+				break;
+			case 7:
+				this.#timeSound7.play();
+				break;
+			case 8:
+				this.#timeSound8.play();
+			default:
+				break;
+		}
+	}
+
 	start() {
 		this.#clearActiveStyles();
 		this.#startButton.classList.add("active-button");
@@ -79,7 +128,8 @@ class PokemonTimer {
 			this.#updateTimer();
 
 			if (this.#seconds === 0) {
-				this.#timeSound.play();
+				this.playTimeSound();
+				// this.#timeSound.play();
 				clearInterval(this.#timer);
 				if (this.#AUTOMATE) {
 					this.#switchButton.click();
