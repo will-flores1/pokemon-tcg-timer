@@ -13,8 +13,9 @@ class PokemonTimer {
 	#timeSound6;
 	#timeSound7;
 	#timeSound8;
+	#deploySite;
 
-	#TIMER_DURATION = 92;
+	#TIMER_DURATION = 3;
 	#AUTOMATE = true;
 	#seconds;
 	#timer;
@@ -25,15 +26,16 @@ class PokemonTimer {
 		this.#stopButton = document.getElementById("stop");
 		this.#resetButton = document.getElementById("reset");
 		this.#switchButton = document.getElementById("switch");
-		this.#tickingSound = new Audio("../assets/tick.mp3");
-		this.#timeSound = new Audio("../assets/time.mp3");
-		this.#timeSound2 = new Audio("../assets/time2.mp3");
-		this.#timeSound3 = new Audio("../assets/time3.mp3");
-		this.#timeSound4 = new Audio("../assets/time4.mp3");
-		this.#timeSound5 = new Audio("../assets/time5.mp3");
-		this.#timeSound6 = new Audio("../assets/time6.mp3");
-		this.#timeSound7 = new Audio("../assets/time7.mp3");
-		this.#timeSound8 = new Audio("../assets/pentakill.mp3");
+		this.#deploySite = "https://will-flores1.github.io/pokemon-turn-timer";
+		this.#tickingSound = new Audio(`${this.#deploySite}/assets/tick.mp3`);
+		this.#timeSound = new Audio(`${this.#deploySite}/assets/time.mp3`);
+		this.#timeSound2 = new Audio(`${this.#deploySite}/assets/time2.mp3`);
+		this.#timeSound3 = new Audio(`${this.#deploySite}/assets/time3.mp3`);
+		this.#timeSound4 = new Audio(`${this.#deploySite}/assets/time4.mp3`);
+		this.#timeSound5 = new Audio(`${this.#deploySite}/assets/time5.mp3`);
+		this.#timeSound6 = new Audio(`${this.#deploySite}/assets/time6.mp3`);
+		this.#timeSound7 = new Audio(`${this.#deploySite}/assets/time7.mp3`);
+		this.#timeSound8 = new Audio(`${this.#deploySite}/assets/pentakill.mp3`);
 
 		this.#seconds = this.#TIMER_DURATION;
 		this.#timer = null;
@@ -129,7 +131,7 @@ class PokemonTimer {
 
 			if (this.#seconds === 0) {
 				this.playTimeSound();
-				// this.#timeSound.play();
+				// new Audio(`${this.#deploySite}/assets/time.mp3`).play();
 				clearInterval(this.#timer);
 				if (this.#AUTOMATE) {
 					this.#switchButton.click();
