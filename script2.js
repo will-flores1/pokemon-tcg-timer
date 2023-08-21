@@ -5,6 +5,7 @@
 	const log = console.log.bind(console);
 	const timerAudio = new Audio(`./assets/time.mp3`);
 
+	log($("#durationSelect").value);
 	const mdl = (() => {
 		/* State */
 		const config = {
@@ -20,7 +21,7 @@
 			PLAYING: false,
 			PAUSED: true,
 			timeLeft: config.DEFAULT_DURATION,
-			firstVisit: true,
+			resetStartBtn: true,
 			timerInterval: null,
 		};
 
@@ -47,6 +48,7 @@
 		const resumeBtn = createButton("Resume");
 		const stpBtn = createButton("Pause");
 		const switchBtn = $("#switchBtn");
+		const durSelect = $("#durationSelect");
 
 		function updateTimerDisplay() {
 			const minutes = Math.floor(mdl.state.timeLeft / 60)
@@ -57,7 +59,7 @@
 		}
 		function updateToggleButton() {
 			_toggleBtnDiv.textContent = "";
-			if (mdl.state.firstVisit) {
+			if (mdl.state.resetStartBtn) {
 				_toggleBtnDiv.appendChild(strtBtn);
 			} else if (mdl.state.PLAYING) {
 				_toggleBtnDiv.appendChild(stpBtn);
@@ -75,6 +77,7 @@
 			resumeBtn,
 			stpBtn,
 			switchBtn,
+			durSelect,
 		};
 	})();
 
@@ -140,7 +143,7 @@
 			});
 		}
 		function _manualswitch() {
-			if (mdl.state.firstVisit) return;
+			if (mdl.state.resetStartBtn) return;
 			_resetCountdown();
 			log("Next turn");
 			_strtState();
@@ -193,7 +196,7 @@
 		/* Controller Service Functions */
 		function _strt() {
 			if (mdl.state.PLAYING) return;
-			if (mdl.state.firstVisit) delete mdl.state.firstVisit;
+			mdl.state.resetStartBtn = false;
 
 			log("start");
 
@@ -209,6 +212,10 @@
 		}
 		function _nxtTurn() {
 			_manualswitch();
+		}
+		function strt() {
+			_strt();
+			view.updateToggleButton();
 		}
 
 		/* Controllers API */
@@ -226,10 +233,19 @@
 		}
 
 		// Event listeners
-		view.strtBtn.addEventListener("click", play);
+		view.strtBtn.addEventListener("click", strt);
 		view.resumeBtn.addEventListener("click", play);
 		view.stpBtn.addEventListener("click", pause);
 		view.switchBtn.addEventListener("click", switchPlayer);
+		view.durSelect.addEventListener("change", (ev) => {
+			mdl.state.resetStartBtn = true;
+			mdl.config.DEFAULT_DURATION = Number(ev.target.value);
+			mdl.state.timeLeft = mdl.config.DEFAULT_DURATION;
+			_resetCountdown();
+			_stpState();
+			view.updateToggleButton();
+			view.updateTimerDisplay();
+		});
 		document.addEventListener("keydown", (ev) => {
 			switch (ev.key) {
 				case " ":
@@ -248,126 +264,3 @@
 		});
 	})();
 })();
-
-// $("#strtBtn").addEventListener("click", () => ctlr.play());
-// $("#stpBtn").addEventListener("click", () => ctlr.pause());
-// $("#toggleBtn").addEventListener("click", function () {
-// 	if (mdl.state.PLAYING) {
-// 		ctlr.pause();
-// 	} else {
-// 		ctlr.play();
-// 	}
-// 	view.updateToggleButton();
-// });
-
-/* Event listeners */
-// document.addEventListener("keydown", (ev) => {
-// 	switch (ev.key) {
-// 		case " ":
-// 			if (PLAYING) {
-// 				toggleSwitchBtn();
-// 				autoswitch();
-// 			}
-// 			break;
-// 		case "b":
-// 			toggleStateBtn();
-// 			break;
-// 		default:
-// 			null;
-// 			break;
-// 	}
-
-// 	ev.key === " " ? toggleStateBtn() : undefined;
-// });
-// stateBtn.addEventListener("click", toggleStateBtn);
-
-// 	/* Toggle play/pause */
-// 	function toggleStateBtn() {
-// 		PLAYING ? pause() : play();
-// 	}
-// 	function toggleSwitchBtn() {
-// 		if (PLAYING) {
-// 			switchBtn.classList.remove("hidden");
-// 			switchBtn.addEventListener("click", () => {
-// 				toggleSwitchBtn();
-// 				autoswitch();
-// 			});
-// 		} else {
-// 			switchBtn.classList.add("hidden");
-// 			switchBtn.removeEventListener("click", () => {});
-// 		}
-// 	}
-
-// 	/* Start time */
-// 	function play() {
-// 		PLAYING = true;
-// 		PAUSED = false;
-// 		refreshStateBtn();
-// 		toggleSwitchBtn();
-// 		clearInterval(mdl.state.timerInterval);
-// 		mdl.state.timerInterval = setInterval(() => {
-// 			updateTimerDisplay();
-// 			if (timeLeft === 0) {
-// 				timerAudio.play();
-// 				AUTOSWITCH ? autoswitch() : reset();
-// 			}
-// 		}, 1000);
-// 		log("playing");
-// 	}
-
-// 	/* Pause time */
-// 	function pause() {
-// 		PAUSED = true;
-// 		PLAYING = false;
-// 		refreshStateBtn();
-// 		toggleSwitchBtn();
-// 		clearInterval(mdl.state.timerInterval);
-// 		updateTimerDisplay();
-// 		log("paused");
-// 	}
-
-// 	/* Reset timer */
-// 	function reset() {
-// 		PAUSED = true;
-// 		PLAYING = false;
-// 		refreshStateBtn();
-// 		clearInterval(mdl.state.timerInterval);
-// 		timeLeft = DURATION;
-// 		updateTimerDisplay();
-// 		log("reset");
-// 	}
-
-// 	/* Next player */
-// 	function autoswitch() {
-// 		timeLeft = DURATION;
-// 		play();
-// 		log("next player's turn");
-// 	}
-
-// 	function updateTimerDisplay() {
-// 		if (PLAYING) {
-// 			--timeLeft;
-// 		}
-// 		const minutes = Math.floor(timeLeft / 60)
-// 			.toString()
-// 			.padStart(2, "0");
-// 		const seconds = (timeLeft % 60).toString().padStart(2, "0");
-// 		timerDisplay.textContent = `${minutes}:${seconds}`;
-// 		log(`${minutes}: ${seconds}`);
-// 	}
-
-// 	function refreshStateBtn() {
-// 		if (PAUSED) {
-// 			stateBtn.textContent = "Play";
-// 		} else {
-// 			stateBtn.textContent = "Pause";
-// 		}
-// 	}
-/* DOM Elements */
-// const timerDisplay = $("#timer");
-// const stateBtn = $("#btn");
-// const switchBtn = $("#switch");
-
-// 	// Main
-// 	refreshStateBtn();
-// 	updateTimerDisplay();
