@@ -80,6 +80,6 @@ button:active {
 
 @media (max-width: 768px) {
 	#timer {
-		font-size: 120px;
+		font-size: calc(50px + 10.390625vw);
 	}
 }
