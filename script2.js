@@ -8,7 +8,7 @@
 	const mdl = (() => {
 		/* State */
 		const config = {
-			DEFAULT_DURATION: 3, // value is in seconds
+			DEFAULT_DURATION: 90, // value is in seconds
 			AUTOSWITCH: true, // auto next players turn? T/F
 		};
 		const defaultState = {
@@ -230,6 +230,22 @@
 		view.resumeBtn.addEventListener("click", play);
 		view.stpBtn.addEventListener("click", pause);
 		view.switchBtn.addEventListener("click", switchPlayer);
+		document.addEventListener("keydown", (ev) => {
+			switch (ev.key) {
+				case " ":
+					switchPlayer();
+					break;
+				case "b":
+					if (mdl.state.PLAYING) {
+						pause();
+					} else {
+						play();
+					}
+					break;
+				default:
+					break;
+			}
+		});
 	})();
 })();
 
