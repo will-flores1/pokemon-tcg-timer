@@ -1,202 +1,319 @@
-class PokemonTimer {
-	#timerElement;
-	#startButton;
-	#stopButton;
-	#resetButton;
-	#switchButton;
-	#tickingSound;
-	#timeSound;
-	#timeSound2;
-	#timeSound3;
-	#timeSound4;
-	#timeSound5;
-	#timeSound6;
-	#timeSound7;
-	#timeSound8;
-	#deploySite;
+"use strict";
+(() => {
+	const $ = document.querySelector.bind(document);
+	const $$ = document.querySelectorAll.bind(document);
+	const log = console.log.bind(console);
+	const timerAudio = new Audio(`./assets/time.mp3`);
 
-	#TIMER_DURATION = 92;
-	#AUTOMATE = true;
-	#seconds;
-	#timer;
+	/* Model eg. state, config, logic, etc. */
+	const mdl = (() => {
+		/* State */
+		const config = {
+			DEFAULT_DURATION: 90, // value is in seconds
+			AUTOSWITCH: true, // auto next players turn? T/F
+		};
+		const defaultState = {
+			PLAYING: false,
+			PAUSED: true,
+			timeLeft: config.DEFAULT_DURATION,
+		};
+		const state = {
+			PLAYING: false,
+			PAUSED: true,
+			timeLeft: config.DEFAULT_DURATION,
+			resetStartBtn: true,
+			timerInterval: null,
+		};
 
-	constructor() {
-		this.#startButton = document.getElementById("start");
-		this.#stopButton = document.getElementById("stop");
+		return {
+			config,
+			state,
+		};
+	})();
 
-		this.#timerElement = document.getElementById("timer");
-		this.#resetButton = document.getElementById("reset");
-		this.#switchButton = document.getElementById("switch");
-		this.#deploySite = "https://will-flores1.github.io/pokemon-turn-timer";
-		this.#tickingSound = new Audio(`${this.#deploySite}/assets/tick.mp3`);
-		this.#timeSound = new Audio(`${this.#deploySite}/assets/time.mp3`);
-		this.#timeSound2 = new Audio(`${this.#deploySite}/assets/time2.mp3`);
-		this.#timeSound3 = new Audio(`${this.#deploySite}/assets/time3.mp3`);
-		this.#timeSound4 = new Audio(`${this.#deploySite}/assets/time4.mp3`);
-		this.#timeSound5 = new Audio(`${this.#deploySite}/assets/time5.mp3`);
-		this.#timeSound6 = new Audio(`${this.#deploySite}/assets/time6.mp3`);
-		this.#timeSound7 = new Audio(`${this.#deploySite}/assets/time7.mp3`);
-		this.#timeSound8 = new Audio(`${this.#deploySite}/assets/pentakill.mp3`);
+	/* View eg. DOM, UI, etc. */
+	const view = (() => {
+		// General Elements
+		function createButton(txt) {
+			const button = document.createElement("button");
+			button.id = txt.toLowerCase() + "Btn";
+			button.textContent = txt;
+			return button;
+		}
 
-		this.#seconds = this.#TIMER_DURATION;
-		this.#timer = null;
+		// Elements
+		const _timerDisp = $("#timer");
+		const _toggleBtnDiv = $("#toggleBtnDiv");
+		const strtBtn = createButton("Start");
+		const resumeBtn = createButton("Resume");
+		const stpBtn = createButton("Pause");
+		const switchBtn = $("#switchBtn");
+		const durSelect = $("#durationSelect");
+		const automatedSwitch = $("#automatedSwitch");
 
-		this.#updateTimer();
-		this.#addEventListeners();
-		this.#initializeVoiceCommands();
-	}
+		const _keyStateDisp = $("#keyStateDisp");
 
-	#initializeVoiceCommands() {
-		if (
-			"SpeechRecognition" in window ||
-			"webkitSpeechRecognition" in window
-		) {
-			const SpeechRecognition =
-				window.SpeechRecognition || window.webkitSpeechRecognition;
-			const recognition = new SpeechRecognition();
+		function updateTimerDisplay() {
+			const minutes = Math.floor(mdl.state.timeLeft / 60)
+				.toString()
+				.padStart(2, "0");
+			const seconds = (mdl.state.timeLeft % 60).toString().padStart(2, "0");
+			_timerDisp.textContent = `${minutes}:${seconds}`;
+		}
+		function updateToggleButton() {
+			_toggleBtnDiv.textContent = "";
+			if (mdl.state.resetStartBtn) {
+				_toggleBtnDiv.appendChild(strtBtn);
+			} else if (mdl.state.PLAYING) {
+				_toggleBtnDiv.appendChild(stpBtn);
+			} else {
+				_toggleBtnDiv.appendChild(resumeBtn);
+			}
+		}
+		function updateKeyDisplay(eventType) {
+			_keyStateDisp.textContent = eventType;
+		}
+		updateTimerDisplay();
+		updateToggleButton();
 
-			recognition.continuous = true;
-			recognition.interimResults = true;
-			recognition.lang = "en-US";
+		return {
+			updateTimerDisplay,
+			updateToggleButton,
+			strtBtn,
+			resumeBtn,
+			stpBtn,
+			switchBtn,
+			durSelect,
+			automatedSwitch,
+			updateKeyDisplay,
+		};
+	})();
 
-			recognition.onresult = (event) => {
-				const result = event.results[event.results.length - 1];
-				if (result.isFinal) {
-					const transcript = result[0].transcript.trim().toLowerCase();
-					console.log(transcript);
-					if (transcript === "jarvis start") {
-						this.#startButton.click();
-					} else if (transcript === "jarvis stop") {
-						this.#stopButton.click();
-					} else if (transcript === "jarvis reset") {
-						this.#resetButton.click();
-					} else if (transcript === "jarvis switch") {
-						this.#switchButton.click();
+	/* Model eg. state, config, logic, etc. */
+	const ctlr = (function () {
+		// Logging
+		function _prntInfo(msg) {
+			log({ message: msg, ...mdl.state });
+		}
+		function _printState() {
+			let minutes = Math.floor(mdl.state.timeLeft / 60)
+				.toString()
+				.padStart(2, "0");
+			let seconds = (mdl.state.timeLeft % 60).toString().padStart(2, "0");
+			log({ ...mdl.state, timeLeft: `${minutes}: ${seconds}` });
+		}
+		function _printTimeLeft() {
+			let minutes = Math.floor(mdl.state.timeLeft / 60)
+				.toString()
+				.padStart(2, "0");
+			let seconds = (mdl.state.timeLeft % 60).toString().padStart(2, "0");
+			log(`${minutes}:${seconds}`);
+		}
+
+		/* Logic helpers */
+		function _startCountdown() {
+			if (mdl.state.timeLeft <= 0) return;
+
+			_printTimeLeft();
+			view.updateTimerDisplay();
+			// start countdown
+			mdl.state.timerInterval = setInterval(function () {
+				mdl.state.timeLeft--;
+				_printTimeLeft();
+				view.updateTimerDisplay();
+
+				// If clock hits 0, stop it
+				if (mdl.state.timeLeft === 0) {
+					if (!mdl.config.AUTOSWITCH) _stopCountdown();
+					if (mdl.config.AUTOSWITCH) _autoswitch();
+				}
+			}, 1000);
+		}
+		function _stopCountdown() {
+			clearInterval(mdl.state.timerInterval);
+			_printTimeLeft();
+			view.updateTimerDisplay();
+		}
+		function _resetCountdown() {
+			clearInterval(mdl.state.timerInterval);
+			mdl.state.timeLeft = mdl.config.DEFAULT_DURATION;
+		}
+
+		function _autoswitch() {
+			_resetCountdown();
+			// 1 seconds sleep
+			new Promise((resolve, reject) => {
+				mdl.state.timerInterval = setTimeout(() => {
+					log("Next turn");
+					_startCountdown();
+					resolve();
+				}, 1000);
+			});
+		}
+		function _manualswitch() {
+			if (mdl.state.resetStartBtn) return;
+			_resetCountdown();
+			log("Next turn");
+			_strtState();
+			_startCountdown();
+		}
+		function _strtState() {
+			mdl.state.PLAYING = true;
+			mdl.state.PAUSED = false;
+		}
+		function _stpState() {
+			mdl.state.PLAYING = false;
+			mdl.state.PAUSED = true;
+		}
+
+		/* Logic functions */
+		function _togglePlayState() {
+			// flip state depending on current state playing/paused
+			if (mdl.state.PLAYING && !mdl.state.PAUSED) {
+				_stpState();
+				// _prntInfo("Timer paused!");
+				return;
+			} else if (!mdl.state.PLAYING && mdl.state.PAUSED) {
+				_strtState();
+				// _prntInfo("Timer started!");
+				return;
+			} else {
+				console.error(
+					"Invalid state detected. Resetting to a default state."
+				);
+				mdl.state.PLAYING = false; // set default state
+				mdl.state.PAUSED = true; // set default state
+				return;
+			}
+		}
+		function _toggleCountdown() {
+			// start/stop countdown according to state
+			if (mdl.state.PLAYING && !mdl.state.paused) {
+				_startCountdown();
+			} else if (!mdl.state.PLAYING && mdl.state.PAUSED) {
+				_stopCountdown();
+			} else {
+				console.error(
+					"Invalid state detected. Resetting to a default state."
+				);
+				mdl.state.timerInterval = null;
+				return;
+			}
+		}
+
+		/* Event Dispatchers func */
+		function _dispatchStartEvent() {
+			document.dispatchEvent(startEvent);
+		}
+		function _dispatchStopEvent() {
+			document.dispatchEvent(stopEvent);
+		}
+		function _dispatchSwitchEvent() {
+			document.dispatchEvent(switchEvent);
+		}
+		function _dispatchResetEvent() {
+			document.dispatchEvent(resetEvent);
+		}
+
+		/* Controller Service Functions */
+		function _strt() {
+			if (mdl.state.PLAYING) return;
+			mdl.state.resetStartBtn = false;
+
+			log("start");
+
+			_togglePlayState();
+			_toggleCountdown();
+		}
+		function _stp() {
+			if (mdl.state.PAUSED) return;
+			log("stop");
+
+			_togglePlayState();
+			_toggleCountdown();
+		}
+		function _nxtTurn() {
+			_manualswitch();
+		}
+
+		/* Controllers API */
+		function strt() {
+			_strt();
+			view.updateToggleButton();
+			_dispatchStartEvent();
+		}
+		function play() {
+			_strt();
+			view.updateToggleButton();
+			_dispatchStartEvent();
+		}
+		function pause() {
+			_stp();
+			view.updateToggleButton();
+			_dispatchStopEvent();
+		}
+		function switchPlayer() {
+			_nxtTurn();
+			view.updateToggleButton();
+			if (!mdl.state.resetStartBtn) _dispatchSwitchEvent();
+		}
+
+		/* Event Dispatchers */
+		const startEvent = new Event("start", { bubbles: false });
+		const stopEvent = new Event("stop", { bubbles: false });
+		const switchEvent = new Event("switch", { bubbles: false });
+		const resetEvent = new Event("reset", { bubbles: false });
+
+		/* Event listeners */
+		// buttons
+		view.strtBtn.addEventListener("click", strt);
+		view.resumeBtn.addEventListener("click", play);
+		view.stpBtn.addEventListener("click", pause);
+		view.switchBtn.addEventListener("click", switchPlayer);
+		// events
+		view.durSelect.addEventListener("change", (ev) => {
+			mdl.config.DEFAULT_DURATION = Number(ev.target.value);
+			_dispatchResetEvent();
+		});
+		view.automatedSwitch.addEventListener("change", (ev) => {
+			mdl.config.AUTOSWITCH = ev.target.checked;
+			log(mdl.config.AUTOSWITCH);
+		});
+		document.addEventListener("keydown", (ev) => {
+			switch (ev.key) {
+				case " ":
+					switchPlayer();
+					break;
+				case "b":
+					if (mdl.state.PLAYING) {
+						pause();
+					} else {
+						play();
 					}
-				}
-			};
-
-			recognition.start();
-		} else {
-			alert("Speech recognition is not supported in this browser.");
-		}
-	}
-
-	#updateTimer() {
-		const minutes = Math.floor(this.#seconds / 60)
-			.toString()
-			.padStart(2, "0");
-		const remainingSeconds = (this.#seconds % 60).toString().padStart(2, "0");
-		this.#timerElement.textContent = `${minutes}:${remainingSeconds}`;
-	}
-
-	getRandomInt() {
-		return Math.floor(Math.random() * 7) + 1;
-	}
-
-	playTimeSound() {
-		const randomInt = this.getRandomInt();
-
-		switch (randomInt) {
-			case 1:
-				this.#timeSound.play();
-				break;
-			case 2:
-				this.#timeSound2.play();
-				break;
-			case 3:
-				this.#timeSound3.play();
-				break;
-			case 4:
-				this.#timeSound4.play();
-				break;
-			case 5:
-				this.#timeSound5.play();
-				break;
-			case 6:
-				this.#timeSound6.play();
-				break;
-			case 7:
-				this.#timeSound7.play();
-				break;
-			case 8:
-				this.#timeSound8.play();
-			default:
-				break;
-		}
-	}
-
-	start() {
-		this.#clearActiveStyles();
-		this.#startButton.classList.add("active-button");
-		clearInterval(this.#timer);
-		this.#timer = setInterval(() => {
-			this.#seconds--;
-			this.#updateTimer();
-
-			if (this.#seconds === 0) {
-				this.playTimeSound();
-				// new Audio(`${this.#deploySite}/assets/time.mp3`).play();
-				clearInterval(this.#timer);
-				if (this.#AUTOMATE) {
-					this.#switchButton.click();
-				}
+					break;
+				default:
+					break;
 			}
-
-			if (this.#seconds <= 15) {
-				this.#tickingSound.play();
-			}
-		}, 1000);
-		setTimeout(
-			() => this.#startButton.classList.remove("active-button"),
-			200
-		);
-	}
-
-	stop() {
-		this.#clearActiveStyles();
-		this.#stopButton.classList.add("active-button");
-		clearInterval(this.#timer);
-		setTimeout(() => this.#stopButton.classList.remove("active-button"), 200);
-	}
-
-	reset() {
-		this.#clearActiveStyles();
-		this.#resetButton.classList.add("active-button");
-		clearInterval(this.#timer);
-		this.#seconds = this.#TIMER_DURATION;
-		this.#updateTimer();
-		setTimeout(
-			() => this.#startButton.classList.remove("active-button"),
-			200
-		);
-	}
-
-	switch() {
-		this.#clearActiveStyles();
-		this.#switchButton.classList.add("active-button");
-		this.#seconds = this.#TIMER_DURATION;
-		setTimeout(
-			() => this.#switchButton.classList.remove("active-button"),
-			200
-		);
-		this.#updateTimer();
-		this.#startButton.click();
-	}
-
-	#addEventListeners() {
-		this.#startButton.addEventListener("click", () => this.start());
-		this.#stopButton.addEventListener("click", () => this.stop());
-		this.#resetButton.addEventListener("click", () => this.reset());
-		this.#switchButton.addEventListener("click", () => this.switch());
-	}
-
-	#clearActiveStyles() {
-		this.#startButton.classList.remove("active-button");
-		this.#stopButton.classList.remove("active-button");
-		this.#resetButton.classList.remove("active-button");
-		this.#switchButton.classList.remove("active-button");
-	}
-}
-
-new PokemonTimer();
+		});
+		// custom events
+		document.addEventListener("start", (ev) => {
+			view.updateKeyDisplay("stop");
+		});
+		document.addEventListener("stop", (ev) => {
+			view.updateKeyDisplay("resume");
+		});
+		document.addEventListener("switch", (ev) => {
+			if (mdl.state.resetStartBtn) view.updateKeyDisplay("start");
+			view.updateKeyDisplay("stop");
+		});
+		document.addEventListener("reset", (ev) => {
+			view.updateKeyDisplay("start");
+			mdl.state.resetStartBtn = true;
+			mdl.state.timeLeft = mdl.config.DEFAULT_DURATION;
+			_resetCountdown();
+			_stpState();
+			view.updateToggleButton();
+			view.updateTimerDisplay();
+		});
+	})();
+})();
