@@ -43,6 +43,10 @@ button:active {
 	transition: all 0.2s;
 }
 
+#toggleBtnDiv {
+	display: inline-block;
+}
+
 .hidden {
 	display: none;
 }

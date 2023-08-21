@@ -1,165 +1,248 @@
 "use strict";
-
-const $ = document.querySelector.bind(document);
-const $$ = document.querySelectorAll.bind(document);
-
-const ctlr = (() => {
+(() => {
+	const $ = document.querySelector.bind(document);
+	const $$ = document.querySelectorAll.bind(document);
 	const log = console.log.bind(console);
 	const timerAudio = new Audio(`./assets/time.mp3`);
 
-	const config = {
-		DEFAULT_DURATION: 3, // value is in seconds
-		AUTOSWITCH: true, // auto next players turn? T/F
-	};
+	const mdl = (() => {
+		/* State */
+		const config = {
+			DEFAULT_DURATION: 3, // value is in seconds
+			AUTOSWITCH: true, // auto next players turn? T/F
+		};
+		const defaultState = {
+			PLAYING: false,
+			PAUSED: true,
+			timeLeft: config.DEFAULT_DURATION,
+		};
+		const state = {
+			PLAYING: false,
+			PAUSED: true,
+			timeLeft: config.DEFAULT_DURATION,
+			firstVisit: true,
+			timerInterval: null,
+		};
 
-	// State
-	/*
-	 * State of timer
-	 * Play/Pause
-	 */
-	const defaultState = {
-		PLAYING: false,
-		PAUSED: true,
-		timeLeft: config.DEFAULT_DURATION,
-	};
+		return {
+			config,
+			state,
+		};
+	})();
 
-	const state = { ...defaultState };
+	/* View eg. DOM, UI, etc. */
+	const view = (() => {
+		// General Elements
+		function createButton(txt) {
+			const button = document.createElement("button");
+			button.id = txt.toLowerCase() + "Btn";
+			button.textContent = txt;
+			return button;
+		}
 
-	// Internal helpers (logic)
-	let timerInterval = null;
+		// Elements
+		const _timerDisp = $("#timer");
+		const _toggleBtnDiv = $("#toggleBtnDiv");
+		const strtBtn = createButton("Start");
+		const resumeBtn = createButton("Resume");
+		const stpBtn = createButton("Pause");
+		const switchBtn = $("#switchBtn");
 
-	// Logging
-	function _prntInfo(msg) {
-		log({ message: msg, ...state });
-	}
-	function _printState() {
-		let minutes = Math.floor(state.timeLeft / 60)
-			.toString()
-			.padStart(2, "0");
-		let seconds = (state.timeLeft % 60).toString().padStart(2, "0");
-		log({ ...state, timeLeft: `${minutes}: ${seconds}` });
-	}
-	function _printTimeLeft() {
-		let minutes = Math.floor(state.timeLeft / 60)
-			.toString()
-			.padStart(2, "0");
-		let seconds = (state.timeLeft % 60).toString().padStart(2, "0");
-		log(`${minutes}: ${seconds}`);
-	}
-
-	/* Logic helpers */
-	function _startCountdown() {
-		if (state.timeLeft <= 0) return;
-
-		_printTimeLeft();
-		// start countdown
-		timerInterval = setInterval(function () {
-			state.timeLeft--;
-			_printTimeLeft(state.timeLeft);
-
-			// If clock hits 0, stop it
-			if (state.timeLeft === 0) {
-				if (!config.AUTOSWITCH) _stopCountdown();
-				if (config.AUTOSWITCH) _autoswitch();
+		function updateTimerDisplay() {
+			const minutes = Math.floor(mdl.state.timeLeft / 60)
+				.toString()
+				.padStart(2, "0");
+			const seconds = (mdl.state.timeLeft % 60).toString().padStart(2, "0");
+			_timerDisp.textContent = `${minutes}:${seconds}`;
+		}
+		function updateToggleButton() {
+			_toggleBtnDiv.textContent = "";
+			if (mdl.state.firstVisit) {
+				_toggleBtnDiv.appendChild(strtBtn);
+			} else if (mdl.state.PLAYING) {
+				_toggleBtnDiv.appendChild(stpBtn);
+			} else {
+				_toggleBtnDiv.appendChild(resumeBtn);
 			}
-		}, 1000);
-	}
-	function _stopCountdown() {
-		clearInterval(timerInterval);
-		timerInterval = null;
-		_printTimeLeft();
-	}
-	function _resetCountdown() {
-		clearInterval(timerInterval);
-		timerInterval = null;
-	}
+		}
+		updateTimerDisplay();
+		updateToggleButton();
 
-	function _autoswitch() {
-		_resetCountdown();
-		// 1 seconds sleep
-		new Promise((resolve, reject) => {
-			setTimeout(() => {
-				log("Next turn");
-				state.timeLeft = defaultState.timeLeft;
-				_startCountdown();
-				resolve();
+		return {
+			updateTimerDisplay,
+			updateToggleButton,
+			strtBtn,
+			resumeBtn,
+			stpBtn,
+			switchBtn,
+		};
+	})();
+
+	/* Model eg. state, config, logic, etc. */
+	const ctlr = (function () {
+		// Logging
+		function _prntInfo(msg) {
+			log({ message: msg, ...mdl.state });
+		}
+		function _printState() {
+			let minutes = Math.floor(mdl.state.timeLeft / 60)
+				.toString()
+				.padStart(2, "0");
+			let seconds = (mdl.state.timeLeft % 60).toString().padStart(2, "0");
+			log({ ...mdl.state, timeLeft: `${minutes}: ${seconds}` });
+		}
+		function _printTimeLeft() {
+			let minutes = Math.floor(mdl.state.timeLeft / 60)
+				.toString()
+				.padStart(2, "0");
+			let seconds = (mdl.state.timeLeft % 60).toString().padStart(2, "0");
+			log(`${minutes}:${seconds}`);
+		}
+
+		/* Logic helpers */
+		function _startCountdown() {
+			if (mdl.state.timeLeft <= 0) return;
+
+			_printTimeLeft();
+			view.updateTimerDisplay();
+			// start countdown
+			mdl.state.timerInterval = setInterval(function () {
+				mdl.state.timeLeft--;
+				_printTimeLeft();
+				view.updateTimerDisplay();
+
+				// If clock hits 0, stop it
+				if (mdl.state.timeLeft === 0) {
+					if (!mdl.config.AUTOSWITCH) _stopCountdown();
+					if (mdl.config.AUTOSWITCH) _autoswitch();
+				}
 			}, 1000);
-		});
-	}
-	function _strtState() {
-		state.PLAYING = true;
-		state.PAUSED = false;
-	}
-	function _stpState() {
-		state.PLAYING = false;
-		state.PAUSED = true;
-	}
+		}
+		function _stopCountdown() {
+			clearInterval(mdl.state.timerInterval);
+			_printTimeLeft();
+			view.updateTimerDisplay();
+		}
+		function _resetCountdown() {
+			clearInterval(mdl.state.timerInterval);
+			mdl.state.timeLeft = mdl.config.DEFAULT_DURATION;
+		}
 
-	/* Logic functions */
-	function _togglePlayState() {
-		// flip state depending on current state playing/paused
-		if (state.PLAYING && !state.PAUSED) {
-			_stpState();
-			// _prntInfo("Timer paused!");
-			return;
-		} else if (!state.PLAYING && state.PAUSED) {
+		function _autoswitch() {
+			_resetCountdown();
+			// 1 seconds sleep
+			new Promise((resolve, reject) => {
+				mdl.state.timerInterval = setTimeout(() => {
+					log("Next turn");
+					_startCountdown();
+					resolve();
+				}, 1000);
+			});
+		}
+		function _manualswitch() {
+			if (mdl.state.firstVisit) return;
+			_resetCountdown();
+			log("Next turn");
 			_strtState();
-			// _prntInfo("Timer started!");
-			return;
-		} else {
-			console.error("Invalid state detected. Resetting to a default state.");
-			state.PLAYING = false; // set default state
-			state.PAUSED = true; // set default state
-			return;
-		}
-	}
-	function _toggleCountdown() {
-		// start/stop countdown according to state
-		if (state.PLAYING && !state.paused) {
 			_startCountdown();
-		} else if (!state.PLAYING && state.PAUSED) {
-			_stopCountdown();
-		} else {
-			console.error("Invalid state detected. Resetting to a default state.");
-			timerInterval = null;
-			return;
 		}
-	}
+		function _strtState() {
+			mdl.state.PLAYING = true;
+			mdl.state.PAUSED = false;
+		}
+		function _stpState() {
+			mdl.state.PLAYING = false;
+			mdl.state.PAUSED = true;
+		}
 
-	/* Controller Service Functions */
-	function _strt() {
-		if (state.PLAYING) return;
-		log("start");
+		/* Logic functions */
+		function _togglePlayState() {
+			// flip state depending on current state playing/paused
+			if (mdl.state.PLAYING && !mdl.state.PAUSED) {
+				_stpState();
+				// _prntInfo("Timer paused!");
+				return;
+			} else if (!mdl.state.PLAYING && mdl.state.PAUSED) {
+				_strtState();
+				// _prntInfo("Timer started!");
+				return;
+			} else {
+				console.error(
+					"Invalid state detected. Resetting to a default state."
+				);
+				mdl.state.PLAYING = false; // set default state
+				mdl.state.PAUSED = true; // set default state
+				return;
+			}
+		}
+		function _toggleCountdown() {
+			// start/stop countdown according to state
+			if (mdl.state.PLAYING && !mdl.state.paused) {
+				_startCountdown();
+			} else if (!mdl.state.PLAYING && mdl.state.PAUSED) {
+				_stopCountdown();
+			} else {
+				console.error(
+					"Invalid state detected. Resetting to a default state."
+				);
+				mdl.state.timerInterval = null;
+				return;
+			}
+		}
 
-		_togglePlayState();
-		_toggleCountdown();
-	}
-	function _stp() {
-		if (state.PAUSED) return;
-		log("stop");
+		/* Controller Service Functions */
+		function _strt() {
+			if (mdl.state.PLAYING) return;
+			if (mdl.state.firstVisit) delete mdl.state.firstVisit;
 
-		_togglePlayState();
-		_toggleCountdown();
-	}
+			log("start");
 
-	/* Controllers */
-	function play() {
-		_strt();
-	}
-	function pause() {
-		_stp();
-	}
+			_togglePlayState();
+			_toggleCountdown();
+		}
+		function _stp() {
+			if (mdl.state.PAUSED) return;
+			log("stop");
 
-	return {
-		play,
-		pause,
-	};
+			_togglePlayState();
+			_toggleCountdown();
+		}
+		function _nxtTurn() {
+			_manualswitch();
+		}
+
+		/* Controllers API */
+		function play() {
+			_strt();
+			view.updateToggleButton();
+		}
+		function pause() {
+			_stp();
+			view.updateToggleButton();
+		}
+		function switchPlayer() {
+			_nxtTurn();
+			view.updateToggleButton();
+		}
+
+		// Event listeners
+		view.strtBtn.addEventListener("click", play);
+		view.resumeBtn.addEventListener("click", play);
+		view.stpBtn.addEventListener("click", pause);
+		view.switchBtn.addEventListener("click", switchPlayer);
+	})();
 })();
 
-$("#strtBtn").addEventListener("click", () => ctlr.play());
-$("#stpBtn").addEventListener("click", () => ctlr.pause());
-ctlr.play();
-ctlr.pause();
+// $("#strtBtn").addEventListener("click", () => ctlr.play());
+// $("#stpBtn").addEventListener("click", () => ctlr.pause());
+// $("#toggleBtn").addEventListener("click", function () {
+// 	if (mdl.state.PLAYING) {
+// 		ctlr.pause();
+// 	} else {
+// 		ctlr.play();
+// 	}
+// 	view.updateToggleButton();
+// });
 
 /* Event listeners */
 // document.addEventListener("keydown", (ev) => {
@@ -205,8 +288,8 @@ ctlr.pause();
 // 		PAUSED = false;
 // 		refreshStateBtn();
 // 		toggleSwitchBtn();
-// 		clearInterval(timerInterval);
-// 		timerInterval = setInterval(() => {
+// 		clearInterval(mdl.state.timerInterval);
+// 		mdl.state.timerInterval = setInterval(() => {
 // 			updateTimerDisplay();
 // 			if (timeLeft === 0) {
 // 				timerAudio.play();
@@ -222,7 +305,7 @@ ctlr.pause();
 // 		PLAYING = false;
 // 		refreshStateBtn();
 // 		toggleSwitchBtn();
-// 		clearInterval(timerInterval);
+// 		clearInterval(mdl.state.timerInterval);
 // 		updateTimerDisplay();
 // 		log("paused");
 // 	}
@@ -232,7 +315,7 @@ ctlr.pause();
 // 		PAUSED = true;
 // 		PLAYING = false;
 // 		refreshStateBtn();
-// 		clearInterval(timerInterval);
+// 		clearInterval(mdl.state.timerInterval);
 // 		timeLeft = DURATION;
 // 		updateTimerDisplay();
 // 		log("reset");
