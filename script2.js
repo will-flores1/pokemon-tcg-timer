@@ -51,6 +51,8 @@
 		const durSelect = $("#durationSelect");
 		const automatedSwitch = $("#automatedSwitch");
 
+		const _keyStateDisp = $("#keyStateDisp");
+
 		function updateTimerDisplay() {
 			const minutes = Math.floor(mdl.state.timeLeft / 60)
 				.toString()
@@ -68,6 +70,9 @@
 				_toggleBtnDiv.appendChild(resumeBtn);
 			}
 		}
+		function updateKeyDisplay(eventType) {
+			_keyStateDisp.textContent = eventType;
+		}
 		updateTimerDisplay();
 		updateToggleButton();
 
@@ -80,6 +85,7 @@
 			switchBtn,
 			durSelect,
 			automatedSwitch,
+			updateKeyDisplay,
 		};
 	})();
 
@@ -195,6 +201,20 @@
 			}
 		}
 
+		/* Event Dispatchers func */
+		function _dispatchStartEvent() {
+			document.dispatchEvent(startEvent);
+		}
+		function _dispatchStopEvent() {
+			document.dispatchEvent(stopEvent);
+		}
+		function _dispatchSwitchEvent() {
+			document.dispatchEvent(switchEvent);
+		}
+		function _dispatchResetEvent() {
+			document.dispatchEvent(resetEvent);
+		}
+
 		/* Controller Service Functions */
 		function _strt() {
 			if (mdl.state.PLAYING) return;
@@ -215,38 +235,64 @@
 		function _nxtTurn() {
 			_manualswitch();
 		}
+
+		/* Controllers API */
 		function strt() {
 			_strt();
 			view.updateToggleButton();
+			_dispatchStartEvent();
 		}
-
-		/* Controllers API */
 		function play() {
 			_strt();
 			view.updateToggleButton();
+			_dispatchStartEvent();
 		}
 		function pause() {
 			_stp();
 			view.updateToggleButton();
+			_dispatchStopEvent();
 		}
 		function switchPlayer() {
 			_nxtTurn();
 			view.updateToggleButton();
+			if (!mdl.state.resetStartBtn) _dispatchSwitchEvent();
 		}
 
-		// Event listeners
+		/* Event Dispatchers */
+		const startEvent = new Event("start", { bubbles: false });
+		const stopEvent = new Event("stop", { bubbles: false });
+		const switchEvent = new Event("switch", { bubbles: false });
+		const resetEvent = new Event("reset", { bubbles: false });
+
+		/* Event listeners */
+		// buttons
 		view.strtBtn.addEventListener("click", strt);
 		view.resumeBtn.addEventListener("click", play);
 		view.stpBtn.addEventListener("click", pause);
 		view.switchBtn.addEventListener("click", switchPlayer);
-		view.durSelect.addEventListener("change", (ev) => {
+		// events
+		document.addEventListener("start", (ev) => {
+			view.updateKeyDisplay("stop");
+		});
+		document.addEventListener("stop", (ev) => {
+			view.updateKeyDisplay("resume");
+		});
+		document.addEventListener("switch", (ev) => {
+			if (mdl.state.resetStartBtn) view.updateKeyDisplay("start");
+			view.updateKeyDisplay("stop");
+		});
+		document.addEventListener("reset", (ev) => {
+			view.updateKeyDisplay("start");
 			mdl.state.resetStartBtn = true;
-			mdl.config.DEFAULT_DURATION = Number(ev.target.value);
 			mdl.state.timeLeft = mdl.config.DEFAULT_DURATION;
 			_resetCountdown();
 			_stpState();
 			view.updateToggleButton();
 			view.updateTimerDisplay();
+		});
+		view.durSelect.addEventListener("change", (ev) => {
+			mdl.config.DEFAULT_DURATION = Number(ev.target.value);
+			_dispatchResetEvent();
 		});
 		view.automatedSwitch.addEventListener("change", (ev) => {
 			mdl.config.AUTOSWITCH = ev.target.checked;
