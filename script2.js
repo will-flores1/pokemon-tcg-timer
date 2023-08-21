@@ -271,25 +271,6 @@
 		view.stpBtn.addEventListener("click", pause);
 		view.switchBtn.addEventListener("click", switchPlayer);
 		// events
-		document.addEventListener("start", (ev) => {
-			view.updateKeyDisplay("stop");
-		});
-		document.addEventListener("stop", (ev) => {
-			view.updateKeyDisplay("resume");
-		});
-		document.addEventListener("switch", (ev) => {
-			if (mdl.state.resetStartBtn) view.updateKeyDisplay("start");
-			view.updateKeyDisplay("stop");
-		});
-		document.addEventListener("reset", (ev) => {
-			view.updateKeyDisplay("start");
-			mdl.state.resetStartBtn = true;
-			mdl.state.timeLeft = mdl.config.DEFAULT_DURATION;
-			_resetCountdown();
-			_stpState();
-			view.updateToggleButton();
-			view.updateTimerDisplay();
-		});
 		view.durSelect.addEventListener("change", (ev) => {
 			mdl.config.DEFAULT_DURATION = Number(ev.target.value);
 			_dispatchResetEvent();
@@ -313,6 +294,26 @@
 				default:
 					break;
 			}
+		});
+		// custom events
+		document.addEventListener("start", (ev) => {
+			view.updateKeyDisplay("stop");
+		});
+		document.addEventListener("stop", (ev) => {
+			view.updateKeyDisplay("resume");
+		});
+		document.addEventListener("switch", (ev) => {
+			if (mdl.state.resetStartBtn) view.updateKeyDisplay("start");
+			view.updateKeyDisplay("stop");
+		});
+		document.addEventListener("reset", (ev) => {
+			view.updateKeyDisplay("start");
+			mdl.state.resetStartBtn = true;
+			mdl.state.timeLeft = mdl.config.DEFAULT_DURATION;
+			_resetCountdown();
+			_stpState();
+			view.updateToggleButton();
+			view.updateTimerDisplay();
 		});
 	})();
 })();
