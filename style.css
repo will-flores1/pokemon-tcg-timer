@@ -1,3 +1,9 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600;700&display=swap");
+
+* {
+	font-family: "Source Code Pro", monospace;
+}
+
 body {
 	background-image: url("https://will-flores1.github.io/pokemon-turn-timer/assets/pokemon-background.jpeg");
 	background-size: 100%;
@@ -12,8 +18,8 @@ body {
 }
 
 #timer {
-	font-size: 32px;
-	color: #333;
+	font-size: 180px;
+	color: #121212;
 	margin: 20px;
 }
 
@@ -35,4 +41,14 @@ button:active {
 	transform: scale(0.95);
 	border: 1px solid #aaa;
 	transition: all 0.2s;
+}
+
+.hidden {
+	display: none;
+}
+
+@media (max-width: 768px) {
+	#timer {
+		font-size: 120px;
+	}
 }

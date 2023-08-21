@@ -15,15 +15,16 @@ class PokemonTimer {
 	#timeSound8;
 	#deploySite;
 
-	#TIMER_DURATION = 3;
+	#TIMER_DURATION = 92;
 	#AUTOMATE = true;
 	#seconds;
 	#timer;
 
 	constructor() {
-		this.#timerElement = document.getElementById("timer");
 		this.#startButton = document.getElementById("start");
 		this.#stopButton = document.getElementById("stop");
+
+		this.#timerElement = document.getElementById("timer");
 		this.#resetButton = document.getElementById("reset");
 		this.#switchButton = document.getElementById("switch");
 		this.#deploySite = "https://will-flores1.github.io/pokemon-turn-timer";
@@ -46,7 +47,10 @@ class PokemonTimer {
 	}
 
 	#initializeVoiceCommands() {
-		if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
+		if (
+			"SpeechRecognition" in window ||
+			"webkitSpeechRecognition" in window
+		) {
 			const SpeechRecognition =
 				window.SpeechRecognition || window.webkitSpeechRecognition;
 			const recognition = new SpeechRecognition();
@@ -59,6 +63,7 @@ class PokemonTimer {
 				const result = event.results[event.results.length - 1];
 				if (result.isFinal) {
 					const transcript = result[0].transcript.trim().toLowerCase();
+					console.log(transcript);
 					if (transcript === "jarvis start") {
 						this.#startButton.click();
 					} else if (transcript === "jarvis stop") {
@@ -142,7 +147,10 @@ class PokemonTimer {
 				this.#tickingSound.play();
 			}
 		}, 1000);
-		setTimeout(() => this.#startButton.classList.remove("active-button"), 200);
+		setTimeout(
+			() => this.#startButton.classList.remove("active-button"),
+			200
+		);
 	}
 
 	stop() {
@@ -158,14 +166,20 @@ class PokemonTimer {
 		clearInterval(this.#timer);
 		this.#seconds = this.#TIMER_DURATION;
 		this.#updateTimer();
-		setTimeout(() => this.#startButton.classList.remove("active-button"), 200);
+		setTimeout(
+			() => this.#startButton.classList.remove("active-button"),
+			200
+		);
 	}
 
 	switch() {
 		this.#clearActiveStyles();
 		this.#switchButton.classList.add("active-button");
 		this.#seconds = this.#TIMER_DURATION;
-		setTimeout(() => this.#switchButton.classList.remove("active-button"), 200);
+		setTimeout(
+			() => this.#switchButton.classList.remove("active-button"),
+			200
+		);
 		this.#updateTimer();
 		this.#startButton.click();
 	}
