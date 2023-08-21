@@ -7,6 +7,7 @@
 
 	/* Model eg. state, config, logic, etc. */
 	const mdl = (() => {
+		const env = "production"; // "development" || "production
 		/* State */
 		const config = {
 			DEFAULT_DURATION: 90, // value is in seconds
@@ -24,24 +25,21 @@
 			resetStartBtn: true,
 			timerInterval: null,
 		};
+		const stats = {
+			turns: 0,
+			totalTime: 0,
+		};
 
 		return {
 			config,
 			state,
+			env,
 		};
 	})();
 
 	/* View eg. DOM, UI, etc. */
 	const view = (() => {
-		// General Elements
-		function createButton(txt) {
-			const button = document.createElement("button");
-			button.id = txt.toLowerCase() + "Btn";
-			button.textContent = txt;
-			return button;
-		}
-
-		// Elements
+		// DOM Elements
 		const _timerDisp = $("#timer");
 		const _toggleBtnDiv = $("#toggleBtnDiv");
 		const strtBtn = createButton("Start");
@@ -52,6 +50,33 @@
 		const automatedSwitch = $("#automatedSwitch");
 
 		const _keyStateDisp = $("#keyStateDisp");
+
+		/* Development Mode */
+		(function devMode() {
+			if (mdl.env === "development") {
+				// create 4s dur option
+				const option = document.createElement("option");
+				option.setAttribute("value", "4");
+				option.textContent = "4s";
+				durSelect.appendChild(option);
+				// create developer title
+				const devTitle = document.createElement("h1");
+				devTitle.textContent = "Developer Mode";
+				devTitle.style.color = "red";
+				devTitle.style.textAlign = "center";
+				devTitle.style.paddingTop = "10px";
+				document.body.prepend(devTitle);
+			} else if (mdl.env === "production") return;
+			else throw new Error("Invalid environment detected.");
+		})();
+
+		// General Elements
+		function createButton(txt) {
+			const button = document.createElement("button");
+			button.id = txt.toLowerCase() + "Btn";
+			button.textContent = txt;
+			return button;
+		}
 
 		function updateTimerDisplay() {
 			const minutes = Math.floor(mdl.state.timeLeft / 60)
