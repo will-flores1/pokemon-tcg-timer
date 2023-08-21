@@ -49,6 +49,7 @@
 		const stpBtn = createButton("Pause");
 		const switchBtn = $("#switchBtn");
 		const durSelect = $("#durationSelect");
+		const automatedSwitch = $("#automatedSwitch");
 
 		function updateTimerDisplay() {
 			const minutes = Math.floor(mdl.state.timeLeft / 60)
@@ -78,6 +79,7 @@
 			stpBtn,
 			switchBtn,
 			durSelect,
+			automatedSwitch,
 		};
 	})();
 
@@ -245,6 +247,10 @@
 			_stpState();
 			view.updateToggleButton();
 			view.updateTimerDisplay();
+		});
+		view.automatedSwitch.addEventListener("change", (ev) => {
+			mdl.config.AUTOSWITCH = ev.target.checked;
+			log(mdl.config.AUTOSWITCH);
 		});
 		document.addEventListener("keydown", (ev) => {
 			switch (ev.key) {
