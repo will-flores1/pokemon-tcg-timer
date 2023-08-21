@@ -9,7 +9,7 @@ const ctlr = (() => {
 
 	const config = {
 		DEFAULT_DURATION: 3, // value is in seconds
-		AUTOSWITCH: false, // auto next players turn? T/F
+		AUTOSWITCH: true, // auto next players turn? T/F
 	};
 
 	// State
@@ -66,9 +66,16 @@ const ctlr = (() => {
 	}
 	function _stopCountdown() {
 		clearInterval(timerInterval);
+		timerInterval = null;
+		_printTimeLeft();
 	}
+	function _resetCountdown() {
+		clearInterval(timerInterval);
+		timerInterval = null;
+	}
+
 	function _autoswitch() {
-		_stopCountdown();
+		_resetCountdown();
 		// 1 seconds sleep
 		new Promise((resolve, reject) => {
 			setTimeout(() => {
@@ -121,21 +128,25 @@ const ctlr = (() => {
 
 	/* Controller Service Functions */
 	function _strt() {
+		if (state.PLAYING) return;
+		log("start");
+
 		_togglePlayState();
 		_toggleCountdown();
 	}
 	function _stp() {
+		if (state.PAUSED) return;
+		log("stop");
+
 		_togglePlayState();
 		_toggleCountdown();
 	}
 
 	/* Controllers */
 	function play() {
-		log("start");
 		_strt();
 	}
 	function pause() {
-		log("stop");
 		_stp();
 	}
 
