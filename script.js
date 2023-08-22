@@ -84,6 +84,7 @@
 				.padStart(2, "0");
 			const seconds = (mdl.state.timeLeft % 60).toString().padStart(2, "0");
 			_timerDisp.textContent = `${minutes}:${seconds}`;
+			document.title = `Pokémon Turn Timer - ${minutes}:${seconds}`;
 		}
 		function updateToggleButton() {
 			_toggleBtnDiv.textContent = "";
