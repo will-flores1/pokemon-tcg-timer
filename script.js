@@ -5,32 +5,17 @@
 	const log = console.log.bind(console);
 	const timerAudio = new Audio(`./assets/time.mp3`);
 
-	/* Custom Event */
-	// const startE = new Event("start", { bubbles: false });
-	// const stopE = new Event("stop", { bubbles: false });
-	// const switchE = new Event("switch", { bubbles: false });
-	// const resetE = new Event("reset", { bubbles: false });
-	// /* Event Dispatchers func */
-	// function _dispatchStartEvent() {
-	// 	document.dispatchEvent(startE);
-	// }
-	// function _dispatchStopEvent() {
-	// 	document.dispatchEvent(stopE);
-	// }
-	// function _dispatchSwitchEvent() {
-	// 	document.dispatchEvent(switchE);
-	// }
-	// function _dispatchResetEvent() {
-	// 	document.dispatchEvent(resetE);
-	// }
+	function playSound(Audio) {
+		Audio.play();
+	}
 
 	/* Model eg. config, state, logic, api, etc. */
 	const mdl = (() => {
 		/* State */
 		const config = {
-			env: "development", // "development" || "production
+			env: "production", // "development" || "production
 			DURATION: 90, // value is in seconds
-			AUTOSWITCH_ON: false, // auto next players turn? T/F
+			AUTOSWITCH_ON: true, // auto next players turn? T/F
 		};
 		const state = {
 			timeLeft: config.DURATION,
@@ -93,7 +78,6 @@
 						_resetTime();
 					}
 				}
-				log(state);
 			}, 1000);
 		}
 		function _stopInterval() {
@@ -144,11 +128,11 @@
 			play,
 			pause,
 			nextTurn,
+			getTimeFmt: () => state.timeLeftFmt,
 			getDuration: () => config.DURATION,
 			setDuration,
 			getAutoSwitch: () => config.AUTOSWITCH_ON,
 			setAutoSwitch,
-			getTimeFmt: () => state.timeLeftFmt,
 			getEnv: () => config.env,
 		};
 	})();
@@ -219,9 +203,8 @@
 
 			intervalHandler = setInterval(() => {
 				updateTimerDisplay();
-				log("front interval");
 				if (mdl.getTimeFmt() === "00:00") {
-					log(mdl.getTimeFmt());
+					playSound(timerAudio);
 					if (mdl.getAutoSwitch()) {
 						_stopInterval();
 						_startInterval();
@@ -240,6 +223,9 @@
 		}
 
 		/* Refresh display helpers */
+		function updateTimerDisplay() {
+			view.timerDisplay.textContent = mdl.getTimeFmt();
+		}
 		function updateCurrButton(state) {
 			view.currBtn.textContent = "";
 			switch (state) {
@@ -277,9 +263,6 @@
 				default:
 					break;
 			}
-		}
-		function updateTimerDisplay() {
-			view.timerDisplay.textContent = mdl.getTimeFmt();
 		}
 
 		/* Event listeners */
@@ -336,18 +319,15 @@
 			switch (ev.key) {
 				case " ":
 					// Next player
+					view.switchBtn.click();
 					break;
 				case "b":
 					// Start/Resume/Pause
+					view.currBtn.firstChild.click();
 					break;
 				default:
 					break;
 			}
 		});
-		// custom events
-		document.addEventListener("start", (ev) => {});
-		document.addEventListener("stop", (ev) => {});
-		document.addEventListener("switch", (ev) => {});
-		document.addEventListener("reset", (ev) => {});
 	})();
 })();

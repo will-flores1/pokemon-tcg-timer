@@ -74,11 +74,20 @@ button:active {
 	margin: 0 auto;
 	color: hsl(0, 0%, 20%);
 }
-.keymap > i {
+.keymap {
 	line-height: 1.5;
+	display: flex;
+	flex-direction: column;
 }
+.keymap > div {
+	font-size: 14px;
+}
+.keymap > div:not(:last-child) {
+	margin-bottom: 6px;
+}
+
 .key {
-	font-size: 8px;
+	/* font-size: 10px; */
 	font-weight: bold;
 	background-color: hsl(0, 0%, 84%);
 	padding: 1px 4px;
