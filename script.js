@@ -115,7 +115,7 @@
 		};
 	})();
 
-	/* Model eg. state, config, logic, etc. */
+	/* Controller eg. event listeners, event dispatchers, etc. */
 	const ctlr = (function () {
 		// Logging
 		function _prntInfo(msg) {
