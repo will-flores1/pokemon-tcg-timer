@@ -64,7 +64,7 @@ button:active {
 	transition: all 0.2s;
 }
 
-#toggleBtnDiv {
+#currBtn {
 	display: inline-block;
 }
 
