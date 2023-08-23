@@ -152,7 +152,6 @@
 		const optionsBtn = $("#optionsBtn");
 		const optionsDrawer = $("#optionsDrawer");
 
-		log(optionsBtn, optionsDrawer);
 		/* Options Drawer */
 		optionsBtn.addEventListener("click", () => {
 			optionsDrawer.classList.toggle("hidden");
