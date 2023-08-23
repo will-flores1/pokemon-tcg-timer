@@ -10,21 +10,25 @@
 	<body>
 		<div id="app">
 			<h1>Pokémon Turn Timer</h1>
-			<div id="options">
-				<label for="automatedSwitch">Auto next turn</label>
-				<input
-					type="checkbox"
-					id="automatedSwitch"
-					name="automatedSwitch"
-					checked />
-				<br />
-				<label for="durationSelect">Turn duration:</label>
-				<select id="durationSelect" name="durationSelect">
-					<option value="30">30s</option>
-					<option value="60">60s</option>
-					<option value="90" selected>90s</option>
-					<option value="120">120s</option>
-				</select>
+			<input type="button" id="optionsBtn" value="Options" />
+			<div id="optionsDrawer" class="hidden">
+				<div id="autoswitchOption">
+					<label for="automatedSwitch">Auto next turn</label>
+					<input
+						type="checkbox"
+						id="automatedSwitch"
+						name="automatedSwitch"
+						checked />
+				</div>
+				<div id="durationOption">
+					<label for="durationSelect">Turn duration:</label>
+					<select id="durationSelect" name="durationSelect">
+						<option value="30">30s</option>
+						<option value="60">60s</option>
+						<option value="90" selected>90s</option>
+						<option value="120">120s</option>
+					</select>
+				</div>
 			</div>
 			<div id="timer">00:00</div>
 			<div id="currBtn"></div>

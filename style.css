@@ -68,6 +68,20 @@ button:active {
 	display: inline-block;
 }
 
+#optionsBtn {
+	margin-top: 20px;
+}
+
+#optionsDrawer {
+	max-height: 1000px;
+	overflow: hidden;
+	transition: max-height 500ms cubic-bezier(0.465, 0.183, 0.153, 0.946);
+}
+
+#optionsDrawer.hidden {
+	max-height: 0;
+}
+
 .keymap {
 	font-size: 12px;
 	max-width: 300px;
@@ -95,10 +109,6 @@ button:active {
 	border-radius: 2px;
 	box-shadow: inset -2px -1px 100px hsla(0, 0%, 25%);
 	box-shadow: 1px 1px 0.1px 1px hsla(0, 0%, 0%, 0.2);
-}
-
-.hidden {
-	display: none;
 }
 
 @media (max-width: 768px) {

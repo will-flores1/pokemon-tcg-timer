@@ -149,6 +149,14 @@
 		const switchBtn = $("#switchBtn");
 		const durSelect = $("#durationSelect");
 		const autoSwitch = $("#automatedSwitch");
+		const optionsBtn = $("#optionsBtn");
+		const optionsDrawer = $("#optionsDrawer");
+
+		log(optionsBtn, optionsDrawer);
+		/* Options Drawer */
+		optionsBtn.addEventListener("click", () => {
+			optionsDrawer.classList.toggle("hidden");
+		});
 
 		/* Default values */
 		durSelect.value = mdl.getDuration();
