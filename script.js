@@ -12,10 +12,16 @@
 	/* Model eg. config, state, logic, api, etc. */
 	const mdl = (() => {
 		/* State */
+		const env = "production"; // "development" || "production
+
+		const LocalStorageSettings = JSON.parse(localStorage.getItem("settings"));
 		const config = {
-			env: "production", // "development" || "production
-			DURATION: 90, // value is in seconds
-			AUTOSWITCH_ON: true, // auto next players turn? T/F
+			DURATION: LocalStorageSettings
+				? LocalStorageSettings.DURATION
+				: null || 90, // value is in seconds
+			AUTOSWITCH_ON: LocalStorageSettings
+				? LocalStorageSettings.AUTOSWITCH_ON
+				: null || true, // auto next players turn? T/F
 		};
 		const state = {
 			timeLeft: config.DURATION,
@@ -48,6 +54,9 @@
 		function _resetTime() {
 			state.timeLeft = Number(config.DURATION);
 			state.timeLeftFmt = _fmtTimeLeft();
+		}
+		function updateLocalStorage(state) {
+			localStorage.setItem("settings", JSON.stringify(state));
 		}
 		/* Loggers  */
 		// function _prntInfo(msg) {
@@ -133,7 +142,8 @@
 			setDuration,
 			getAutoSwitch: () => config.AUTOSWITCH_ON,
 			setAutoSwitch,
-			getEnv: () => config.env,
+			getEnv: () => env,
+			updateLocalStorage,
 		};
 	})();
 
@@ -313,6 +323,10 @@
 			updateTimerDisplay();
 			updateCurrButton("reset");
 			updateInstructions("reset");
+			mdl.updateLocalStorage({
+				AUTOSWITCH_ON: mdl.getAutoSwitch(),
+				DURATION: Number(mdl.getDuration()),
+			});
 		});
 		view.autoSwitch.addEventListener("change", (ev) => {
 			mdl.setAutoSwitch(ev.target.checked);
@@ -320,6 +334,10 @@
 			updateTimerDisplay();
 			updateCurrButton("reset");
 			updateInstructions("reset");
+			mdl.updateLocalStorage({
+				AUTOSWITCH_ON: mdl.getAutoSwitch(),
+				DURATION: Number(mdl.getDuration()),
+			});
 		});
 		// keyboard events
 		document.addEventListener("keydown", (ev) => {
