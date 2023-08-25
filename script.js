@@ -14,15 +14,17 @@
 		/* State */
 		const env = "production"; // "development" || "production
 
-		const LocalStorageSettings = JSON.parse(localStorage.getItem("settings"));
+		const LocalStorageSettings =
+			JSON.parse(localStorage.getItem("settings")) || {};
+
 		const config = {
-			DURATION: LocalStorageSettings
-				? LocalStorageSettings.DURATION
-				: null || 90, // value is in seconds
-			AUTOSWITCH_ON: LocalStorageSettings
-				? LocalStorageSettings.AUTOSWITCH_ON
-				: null || true, // auto next players turn? T/F
+			DURATION: LocalStorageSettings.DURATION || 90, // value is in seconds
+			AUTOSWITCH_ON:
+				typeof LocalStorageSettings.AUTOSWITCH_ON === "boolean"
+					? LocalStorageSettings.AUTOSWITCH_ON
+					: true, // auto next player's turn? T/F
 		};
+
 		const state = {
 			timeLeft: config.DURATION,
 			timerInterval: null,
@@ -169,9 +171,9 @@
 
 		/* Default values */
 		durSelect.value = mdl.getDuration();
+		autoSwitch.checked = mdl.getAutoSwitch();
 		timerDisplay.textContent = mdl.getTimeFmt();
 		currBtn.appendChild(startBtn);
-		autoSwitch.checked = mdl.getAutoSwitch();
 
 		/* Development Mode */
 		mdl.getEnv() === "development" &&
