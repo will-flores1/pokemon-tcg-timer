@@ -1,0 +1,12 @@
+{
+  "name": "pokemon-turn-timer",
+  "version": "1.0.0",
+  "description": "## description",
+  "main": "oldscript.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Will Flores",
+  "license": "ISC"
+}
