@@ -24,7 +24,7 @@ body::before {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-image: url("https://will-flores1.github.io/pokemon-turn-timer/assets/pokemon-background.jpeg");
+	background-image: url("/assets/pokemon-background.jpeg");
 	background-size: 100%;
 	background-repeat: repeat;
 	background-position: center center;
@@ -136,4 +136,12 @@ button:active {
 	#timer {
 		font-size: calc(50px + 13.390625vw);
 	}
+}
+
+#messages {
+	bottom: 0;
+	left: 0;
+	max-height: 100px;
+	overflow-y: scroll;
+	position: fixed;
 }
